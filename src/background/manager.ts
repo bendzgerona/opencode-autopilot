@@ -288,7 +288,7 @@ export class BackgroundManager {
 			this.enqueuedTaskIds.delete(taskId);
 
 			const task = getTaskById(this.options.db, taskId);
-			if (!task || task.status !== "pending" || this.runningTasks.has(taskId)) {
+			if (task?.status !== "pending" || this.runningTasks.has(taskId)) {
 				continue;
 			}
 

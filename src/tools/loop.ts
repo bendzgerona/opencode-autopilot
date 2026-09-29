@@ -1,5 +1,4 @@
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { getLoopController, type LoopController } from "../autonomy";
 
 type LoopAction = "status" | "abort" | "start" | "pause" | "resume" | "iterate";
@@ -78,18 +77,22 @@ export const ocLoop = tool({
 	description:
 		"Manage the autonomy loop. Actions: start (begin new loop), iterate (advance with result), pause, resume, abort, status.",
 	args: {
-		action: z
+		action: tool.schema
 			.enum(["status", "abort", "start", "pause", "resume", "iterate"])
 			.describe("Loop action to perform"),
-		taskDescription: z.string().min(1).optional().describe("Task description for the start action"),
-		maxIterations: z
+		taskDescription: tool.schema
+			.string()
+			.min(1)
+			.optional()
+			.describe("Task description for the start action"),
+		maxIterations: tool.schema
 			.number()
 			.int()
 			.min(1)
 			.max(100)
 			.optional()
 			.describe("Max iterations for the start action"),
-		iterationResult: z
+		iterationResult: tool.schema
 			.string()
 			.optional()
 			.describe("Result of the current iteration for the iterate action"),

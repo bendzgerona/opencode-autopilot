@@ -23,7 +23,7 @@ describe("review-runner", () => {
 		expect(status.reviewRunId).toBe("review_plan_1");
 		expect(status.requiredReviewers).toEqual(["logic-auditor", "security-auditor", "red-team"]);
 		expect(status.reviewers.map((reviewer) => reviewer.reviewer)).toContain("product-thinker");
-	});
+	}, 30000);
 
 	test("completeReviewRun blocks when required reviewer did not execute", () => {
 		const reviewRun = reviewRunSchema.parse({

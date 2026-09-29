@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	buildFailureSummary,
@@ -507,7 +508,11 @@ describe("handler artifact contracts (Fix 3)", () => {
 	test("RECON returns error when report.md missing after agent result", async () => {
 		const { handleRecon } = await import("../../src/orchestrator/handlers/recon");
 		const state = makeMinimalState("RECON");
-		const result = await handleRecon(state, "/tmp/nonexistent-artifacts-recon", "agent output");
+		const result = await handleRecon(
+			state,
+			join(tmpdir(), "nonexistent-artifacts-recon"),
+			"agent output",
+		);
 		expect(result.action).toBe("error");
 		expect(result.phase).toBe("RECON");
 		expect(result.message).toContain("report.md");
@@ -516,7 +521,7 @@ describe("handler artifact contracts (Fix 3)", () => {
 	test("RECON returns dispatch when no result yet", async () => {
 		const { handleRecon } = await import("../../src/orchestrator/handlers/recon");
 		const state = makeMinimalState("RECON");
-		const result = await handleRecon(state, "/tmp/nonexistent-artifacts-recon");
+		const result = await handleRecon(state, join(tmpdir(), "nonexistent-artifacts-recon"));
 		expect(result.action).toBe("dispatch");
 		expect(result.agent).toBe("oc-researcher");
 	});
@@ -526,7 +531,7 @@ describe("handler artifact contracts (Fix 3)", () => {
 		const state = makeMinimalState("CHALLENGE");
 		const result = await handleChallenge(
 			state,
-			"/tmp/nonexistent-artifacts-challenge",
+			join(tmpdir(), "nonexistent-artifacts-challenge"),
 			"agent output",
 		);
 		expect(result.action).toBe("error");
@@ -537,7 +542,7 @@ describe("handler artifact contracts (Fix 3)", () => {
 	test("CHALLENGE returns dispatch when no result yet", async () => {
 		const { handleChallenge } = await import("../../src/orchestrator/handlers/challenge");
 		const state = makeMinimalState("CHALLENGE");
-		const result = await handleChallenge(state, "/tmp/nonexistent-artifacts-challenge");
+		const result = await handleChallenge(state, join(tmpdir(), "nonexistent-artifacts-challenge"));
 		expect(result.action).toBe("dispatch");
 		expect(result.agent).toBe("oc-challenger");
 	});
@@ -557,7 +562,11 @@ describe("handler artifact contracts (Fix 3)", () => {
 				program: null,
 			},
 		});
-		const result = await handleShip(state, "/tmp/nonexistent-artifacts-ship", "agent output");
+		const result = await handleShip(
+			state,
+			join(tmpdir(), "nonexistent-artifacts-ship"),
+			"agent output",
+		);
 		expect(result.action).toBe("error");
 		expect(result.phase).toBe("SHIP");
 		expect(result.message).toContain("walkthrough.md");
@@ -568,7 +577,7 @@ describe("handler artifact contracts (Fix 3)", () => {
 	test("SHIP returns complete when only decisions.md exists", async () => {
 		const fs = await import("node:fs/promises");
 		const { getPhaseDir } = await import("../../src/orchestrator/artifacts");
-		const tmpDir = `/tmp/test-ship-decisions-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-ship-decisions-${Date.now()}`);
 		const { createShipHandler } = await import("../../src/orchestrator/handlers/ship");
 		const state = makeMinimalState("SHIP", {
 			oracleSignoffs: {
@@ -623,7 +632,7 @@ describe("handler artifact contracts (Fix 3)", () => {
 				program: null,
 			},
 		});
-		const result = await handleShip(state, "/tmp/nonexistent-artifacts-ship");
+		const result = await handleShip(state, join(tmpdir(), "nonexistent-artifacts-ship"));
 		expect(result.action).toBe("dispatch");
 		expect(result.agent).toBe("oc-shipper");
 	});

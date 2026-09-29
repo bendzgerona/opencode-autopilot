@@ -1,6 +1,6 @@
 import { Database as SqliteDatabase } from "bun:sqlite";
-import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { CONFIG_PATH, inspectConfigMode, loadConfig } from "../src/config";
 import {
 	formatEvents,
@@ -424,17 +424,20 @@ export async function runInspect(
 	console.log(result.output);
 }
 
-function resolveGitRoot(): string | null {
-	try {
-		const result = execSync("git rev-parse --show-toplevel", {
-			encoding: "utf-8",
-			timeout: 3000,
-			stdio: ["pipe", "pipe", "pipe"],
-		}).trim();
-		return result.length > 0 ? result : null;
-	} catch {
-		return null;
+function resolveGitRoot(startDir = process.cwd()): string | null {
+	let current = resolve(startDir);
+	while (true) {
+		const gitPath = join(current, ".git");
+		if (existsSync(gitPath)) {
+			return current;
+		}
+		const parent = dirname(current);
+		if (parent === current) {
+			break;
+		}
+		current = parent;
 	}
+	return null;
 }
 
 const EPHEMERAL_TEST_PREFIXES = Object.freeze([

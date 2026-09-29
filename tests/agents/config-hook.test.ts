@@ -66,8 +66,9 @@ describe("configHook", () => {
 		await configHook(config);
 
 		expectSuppressedNativeAgent(config.agent?.build);
-		expect((config.agent?.build as Record<string, unknown>).description).toBe("build agent");
-		expect((config.agent?.build as Record<string, unknown>).prompt).toBe("build");
+		const buildRecord = config.agent?.build as Record<string, unknown>;
+		expect(buildRecord.description).toBe("build agent");
+		expect(buildRecord.prompt).toBe("build");
 	});
 
 	test("suppresses built-in plan agent with disable: true", async () => {
@@ -78,8 +79,9 @@ describe("configHook", () => {
 		await configHook(config);
 
 		expectSuppressedNativeAgent(config.agent?.plan);
-		expect((config.agent?.plan as Record<string, unknown>).description).toBe("plan agent");
-		expect((config.agent?.plan as Record<string, unknown>).prompt).toBe("plan");
+		const planRecord = config.agent?.plan as Record<string, unknown>;
+		expect(planRecord.description).toBe("plan agent");
+		expect(planRecord.prompt).toBe("plan");
 	});
 
 	test("deterministically suppresses native plan/build keys when they are absent in initial config", async () => {
@@ -103,8 +105,10 @@ describe("configHook", () => {
 
 		expectSuppressedNativeAgent(config.agent?.Plan);
 		expectSuppressedNativeAgent(config.agent?.Build);
-		expect((config.agent?.Plan as Record<string, unknown>).prompt).toBe("native Plan");
-		expect((config.agent?.Build as Record<string, unknown>).prompt).toBe("native Build");
+		const planRecord = config.agent?.Plan as Record<string, unknown>;
+		const buildRecord = config.agent?.Build as Record<string, unknown>;
+		expect(planRecord.prompt).toBe("native Plan");
+		expect(buildRecord.prompt).toBe("native Build");
 	});
 
 	test("suppresses uppercase Planner/Builder variants when pre-populated", async () => {
@@ -118,8 +122,10 @@ describe("configHook", () => {
 
 		expectSuppressedNativeAgent(config.agent?.Planner);
 		expectSuppressedNativeAgent(config.agent?.Builder);
-		expect((config.agent?.Planner as Record<string, unknown>).prompt).toBe("native Planner");
-		expect((config.agent?.Builder as Record<string, unknown>).prompt).toBe("native Builder");
+		const plannerRecord = config.agent?.Planner as Record<string, unknown>;
+		const builderRecord = config.agent?.Builder as Record<string, unknown>;
+		expect(plannerRecord.prompt).toBe("native Planner");
+		expect(builderRecord.prompt).toBe("native Builder");
 	});
 
 	test("does NOT suppress custom specialist-planner agent registered by the plugin", async () => {

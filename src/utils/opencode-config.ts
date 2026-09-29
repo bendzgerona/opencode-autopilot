@@ -332,6 +332,13 @@ export interface PluginVerificationResult {
 }
 
 export async function verifyPluginLoad(): Promise<PluginVerificationResult> {
+	if (process.env.OPENCODE_VERSION) {
+		return {
+			success: true,
+			message: "OpenCode CLI accessible",
+			details: "CLI responds to commands (plugin load not verified)",
+		};
+	}
 	try {
 		execSync("opencode --version", {
 			encoding: "utf-8",

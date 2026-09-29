@@ -33,8 +33,12 @@ describe("plugin entry point", () => {
 		$: {} as PluginInput["$"],
 	};
 
+	let cachedPlugin: PluginResult | null = null;
 	async function loadPlugin(): Promise<PluginResult> {
-		return plugin(mockInput as never);
+		if (!cachedPlugin) {
+			cachedPlugin = await plugin(mockInput as never);
+		}
+		return cachedPlugin;
 	}
 
 	function createContext(): LoopContext {

@@ -22,10 +22,12 @@ function buildDefaultCategoryConfig(category: Category) {
 
 function buildAppliedConfig(category: Category, override?: RoutingConfig["categories"][string]) {
 	const baseConfig = buildDefaultCategoryConfig(category);
+	const skills =
+		override?.skills && override.skills.length > 0 ? override.skills : baseConfig.skills;
 	return CategoryConfigSchema.parse({
 		...baseConfig,
 		...override,
-		skills: override?.skills ?? baseConfig.skills,
+		skills,
 		metadata: {
 			...baseConfig.metadata,
 			...(override?.metadata ?? {}),

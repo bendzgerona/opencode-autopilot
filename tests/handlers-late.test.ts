@@ -154,7 +154,7 @@ describe("handleShip", () => {
 
 	test("returns error when no SHIP artifacts exist after result", async () => {
 		const fs = await import("node:fs/promises");
-		const tmpDir = `/tmp/test-ship-error-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-ship-error-${Date.now()}`);
 		const state = makeState({
 			currentPhase: "SHIP",
 			oracleSignoffs: { tranche: createPassingTrancheSignoff(), program: null },
@@ -174,7 +174,7 @@ describe("handleShip", () => {
 
 	test("returns complete when walkthrough.md exists after result", async () => {
 		const fs = await import("node:fs/promises");
-		const tmpDir = `/tmp/test-ship-complete-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-ship-complete-${Date.now()}`);
 		const state = makeState({
 			currentPhase: "SHIP",
 			oracleSignoffs: { tranche: createPassingTrancheSignoff(), program: null },
@@ -210,7 +210,7 @@ describe("handleShip", () => {
 
 	test("blocks SHIP when tranche Oracle signoff is missing", async () => {
 		const state = makeState({ currentPhase: "SHIP" });
-		const result = await handleShip(state, "/tmp/artifacts");
+		const result = await handleShip(state, join(tempDir, "artifacts"));
 
 		expect(result.action).toBe("error");
 		expect(result.code).toBe("E_ORACLE_TRANCHE_SIGNOFF_REQUIRED");
@@ -221,7 +221,7 @@ describe("handleShip", () => {
 describe("handleRetrospective", () => {
 	test("dispatches oc-retrospector with refs to all phase artifacts", async () => {
 		const state = makeState({ currentPhase: "RETROSPECTIVE" });
-		const result = await handleRetrospective(state, "/tmp/artifacts");
+		const result = await handleRetrospective(state, join(tempDir, "artifacts"));
 
 		expect(result.action).toBe("dispatch");
 		expect(result.agent).toBe(AGENT_NAMES.RETROSPECTIVE);
@@ -234,7 +234,7 @@ describe("handleRetrospective", () => {
 		const state = makeState({ currentPhase: "RETROSPECTIVE" });
 		const result = await handleRetrospective(
 			state,
-			"/tmp/artifacts",
+			join(tempDir, "artifacts"),
 			JSON.stringify({ lessons: [] }),
 		);
 
@@ -248,7 +248,7 @@ describe("handleRetrospective", () => {
 describe("handleExplore", () => {
 	test("always returns complete immediately", async () => {
 		const state = makeState({ currentPhase: "EXPLORE" });
-		const result = await handleExplore(state, "/tmp/artifacts");
+		const result = await handleExplore(state, join(tempDir, "artifacts"));
 
 		expect(result.action).toBe("complete");
 		expect(result.phase).toBe("EXPLORE");
@@ -256,14 +256,14 @@ describe("handleExplore", () => {
 
 	test("sets progress message indicating phase was skipped", async () => {
 		const state = makeState({ currentPhase: "EXPLORE" });
-		const result = await handleExplore(state, "/tmp/artifacts");
+		const result = await handleExplore(state, join(tempDir, "artifacts"));
 
 		expect(result.progress).toContain("skipped");
 	});
 
 	test("returns complete even with result provided", async () => {
 		const state = makeState({ currentPhase: "EXPLORE" });
-		const result = await handleExplore(state, "/tmp/artifacts", "some result");
+		const result = await handleExplore(state, join(tempDir, "artifacts"), "some result");
 
 		expect(result.action).toBe("complete");
 	});

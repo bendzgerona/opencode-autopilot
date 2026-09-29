@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { existsSync } from "node:fs";
 import { access, readFile, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { Config } from "@opencode-ai/plugin";
@@ -779,23 +780,18 @@ const LSP_SERVER_BINARIES: ReadonlyArray<{
  * since users may not need every language. Zero found = warn.
  */
 export async function lspHealthCheck(): Promise<HealthResult> {
-	const { execFile } = await import("node:child_process");
-	const { promisify } = await import("node:util");
-	const execFileAsync = promisify(execFile);
-
+	const pathDirs = (process.env.PATH ?? "").split(":");
 	const found: string[] = [];
 	const missing: string[] = [];
 
-	await Promise.all(
-		LSP_SERVER_BINARIES.map(async ({ binary, language, installHint }) => {
-			try {
-				await execFileAsync("which", [binary], { timeout: 3000 });
-				found.push(`${language}: ${binary}`);
-			} catch {
-				missing.push(`${language}: ${binary} (${installHint})`);
-			}
-		}),
-	);
+	for (const { binary, language, installHint } of LSP_SERVER_BINARIES) {
+		const exists = pathDirs.some((dir) => dir && existsSync(join(dir, binary)));
+		if (exists) {
+			found.push(`${language}: ${binary}`);
+		} else {
+			missing.push(`${language}: ${binary} (${installHint})`);
+		}
+	}
 
 	found.sort();
 	missing.sort();

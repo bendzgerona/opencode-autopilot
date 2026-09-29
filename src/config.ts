@@ -704,15 +704,23 @@ export function migrateV6toV7(v6Config: PluginConfigV6): PluginConfig {
 	};
 }
 
-export async function loadConfig(configPath: string = CONFIG_PATH): Promise<PluginConfig | null> {
+export function getConfigPath(): string {
+	if (process.env.OPENCODE_CONFIG) {
+		return process.env.OPENCODE_CONFIG;
+	}
+	return join(getGlobalConfigDir(), "opencode-autopilot.json");
+}
+
+export async function loadConfig(configPath?: string): Promise<PluginConfig | null> {
+	const targetPath = configPath ?? getConfigPath();
 	try {
-		const raw = await readFile(configPath, "utf-8");
+		const raw = await readFile(targetPath, "utf-8");
 		const parsed = JSON.parse(raw);
 
 		const v7Result = pluginConfigSchemaV7.safeParse(parsed);
 		if (v7Result.success) {
 			if (isV7ConfigMissingMode(parsed)) {
-				await saveConfig(v7Result.data, configPath);
+				await saveConfig(v7Result.data, targetPath);
 			}
 			return v7Result.data;
 		}
@@ -720,7 +728,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 		const v6Result = pluginConfigSchemaV6.safeParse(parsed);
 		if (v6Result.success) {
 			const migrated = migrateV6toV7(v6Result.data);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -728,7 +736,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 		if (v5Result.success) {
 			const v6 = migrateV5toV6(v5Result.data);
 			const migrated = migrateV6toV7(v6);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -737,7 +745,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 			const v5 = migrateV4toV5(v4Result.data);
 			const v6 = migrateV5toV6(v5);
 			const migrated = migrateV6toV7(v6);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -747,7 +755,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 			const v5 = migrateV4toV5(v4);
 			const v6 = migrateV5toV6(v5);
 			const migrated = migrateV6toV7(v6);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -758,7 +766,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 			const v5 = migrateV4toV5(v4);
 			const v6 = migrateV5toV6(v5);
 			const migrated = migrateV6toV7(v6);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -770,7 +778,7 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 			const v5 = migrateV4toV5(v4);
 			const v6 = migrateV5toV6(v5);
 			const migrated = migrateV6toV7(v6);
-			await saveConfig(migrated, configPath);
+			await saveConfig(migrated, targetPath);
 			return migrated;
 		}
 
@@ -781,15 +789,13 @@ export async function loadConfig(configPath: string = CONFIG_PATH): Promise<Plug
 	}
 }
 
-export async function saveConfig(
-	config: PluginConfig,
-	configPath: string = CONFIG_PATH,
-): Promise<void> {
-	await ensureDir(dirname(configPath));
+export async function saveConfig(config: PluginConfig, configPath?: string): Promise<void> {
+	const targetPath = configPath ?? getConfigPath();
+	await ensureDir(dirname(targetPath));
 	const validated = pluginConfigSchema.parse(config);
-	const tmpPath = `${configPath}.tmp.${randomBytes(8).toString("hex")}`;
+	const tmpPath = `${targetPath}.tmp.${randomBytes(8).toString("hex")}`;
 	await writeFile(tmpPath, JSON.stringify(validated, null, 2), "utf-8");
-	await rename(tmpPath, configPath);
+	await rename(tmpPath, targetPath);
 }
 
 export function isFirstLoad(config: PluginConfig | null): boolean {

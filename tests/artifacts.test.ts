@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
 	ensurePhaseDir,
 	getArtifactRef,
@@ -73,7 +75,7 @@ describe("getArtifactRef", () => {
 
 describe("ensurePhaseDir", () => {
 	test("creates directory and returns path", async () => {
-		const tmpDir = `/tmp/test-artifacts-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-artifacts-${Date.now()}`);
 		const result = await ensurePhaseDir(tmpDir, "RECON");
 		expect(result).toBe(`${tmpDir}/phases/RECON`);
 		// Verify directory was created
@@ -82,7 +84,7 @@ describe("ensurePhaseDir", () => {
 	});
 
 	test("creates run-scoped directory", async () => {
-		const tmpDir = `/tmp/test-artifacts-runscoped-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-artifacts-runscoped-${Date.now()}`);
 		const result = await ensurePhaseDir(tmpDir, "RECON", "run_abc123");
 		expect(result).toBe(`${tmpDir}/phases/run_abc123/RECON`);
 		const { existsSync } = await import("node:fs");
@@ -97,7 +99,7 @@ describe("listRuns", () => {
 	});
 
 	test("returns run IDs from phases directory", async () => {
-		const tmpDir = `/tmp/test-listruns-${Date.now()}`;
+		const tmpDir = join(tmpdir(), `test-listruns-${Date.now()}`);
 		const { mkdirSync } = await import("node:fs");
 		mkdirSync(`${tmpDir}/phases/run_aaa`, { recursive: true });
 		mkdirSync(`${tmpDir}/phases/run_bbb`, { recursive: true });

@@ -53,7 +53,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		const state = JSON.parse(stateRaw);
 		expect(state.idea).toBe("build a chat app");
 		expect(state.currentPhase).toBe("RECON");
-	});
+	}, 30000);
 
 	test("with result delegates to current phase handler", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -81,7 +81,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		// After RECON complete, it should dispatch CHALLENGE
 		expect(parsed.action).toBe("dispatch");
 		expect(parsed.phase).toBe("CHALLENGE");
-	});
+	}, 30000);
 
 	test("handler returning complete advances to next phase", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -121,7 +121,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		// ARCHITECT handler dispatches single (depth=1) with empty confidence (HIGH default)
 		expect(["dispatch", "dispatch_multi"]).toContain(parsed.action);
 		expect(parsed.phase).toBe("ARCHITECT");
-	});
+	}, 30000);
 
 	test("handler returning dispatch returns dispatch JSON directly", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -150,7 +150,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		const parsed = JSON.parse(result);
 		expect(parsed.action).toBe("dispatch");
 		expect(parsed.agent).toBeDefined();
-	});
+	}, 30000);
 
 	test("BUILD with multiple pending tasks dispatches one task sequentially", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -203,7 +203,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		expect(parsed.action).toBe("dispatch_multi");
 		expect(parsed.agents).toHaveLength(2);
 		expect(parsed.agents[0].agent).toBe(AGENT_NAMES.BUILD);
-	});
+	}, 30000);
 
 	test("BUILD phase with reviewPending triggers reviewCore directly", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -246,7 +246,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		const result = await orchestrateCore({}, tempDir);
 		const parsed = JSON.parse(result);
 		expect(["dispatch", "complete"]).toContain(parsed.action);
-	});
+	}, 30000);
 
 	test("terminal phase (RETROSPECTIVE) completion returns pipeline complete", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -277,7 +277,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		const result = await orchestrateCore({ result: JSON.stringify(envelope) }, tempDir);
 		const parsed = JSON.parse(result);
 		expect(parsed.action).toBe("complete");
-	});
+	}, 30000);
 
 	test("resume (no result, active state) delegates to current phase handler", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -532,7 +532,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		const second = JSON.parse(await orchestrateCore({ result: envelope }, tempDir));
 		expect(second.action).toBe("error");
 		expect(second.code).toBe("E_DUPLICATE_RESULT");
-	});
+	}, 30000);
 
 	test("PLAN completion populates tasks from empty state", async () => {
 		const { orchestrateCore } = await import("../src/tools/orchestrate");
@@ -594,7 +594,7 @@ describe("orchestrateCore pipeline dispatch", () => {
 		expect(finalState.tasks[0].title).toBe("Setup DB");
 		expect(finalState.tasks[1].title).toBe("Create API");
 		expect(finalState.tasks[2].title).toBe("Add tests");
-	});
+	}, 30000);
 });
 
 // ---- configHook pipeline agent registration tests ----

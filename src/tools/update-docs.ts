@@ -1,5 +1,6 @@
 import { execFile as execFileCb } from "node:child_process";
-import { basename } from "node:path";
+import { existsSync } from "node:fs";
+import { basename, join } from "node:path";
 import { promisify } from "node:util";
 import { tool } from "@opencode-ai/plugin";
 
@@ -17,8 +18,11 @@ interface AffectedDoc {
 
 /** Run a git command and return stdout lines (empty array on error). */
 async function gitLines(args: readonly string[], cwd: string): Promise<readonly string[]> {
+	if (!existsSync(join(cwd, ".git"))) {
+		return [];
+	}
 	try {
-		const { stdout } = await execFile("git", [...args], { cwd });
+		const { stdout } = await execFile("git", [...args], { cwd, timeout: 5000 });
 		return stdout
 			.trim()
 			.split("\n")

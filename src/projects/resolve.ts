@@ -1,8 +1,8 @@
 import type { Database } from "bun:sqlite";
 import { execFile as execFileCb, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { realpathSync } from "node:fs";
-import { basename, normalize } from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { basename, join, normalize } from "node:path";
 import { promisify } from "node:util";
 import {
 	getProjectByAnyPath,
@@ -102,6 +102,10 @@ function readGitCommandSync(projectRoot: string, args: readonly string[]): strin
 export async function readProjectGitFingerprint(
 	projectRoot: string,
 ): Promise<GitFingerprintInput | null> {
+	if (!existsSync(join(projectRoot, ".git"))) {
+		return null;
+	}
+
 	const remoteUrl = await readGitCommand(projectRoot, ["config", "--get", "remote.origin.url"]);
 	if (remoteUrl === null) {
 		return null;
@@ -127,6 +131,10 @@ export async function readProjectGitFingerprint(
 }
 
 export function readProjectGitFingerprintSync(projectRoot: string): GitFingerprintInput | null {
+	if (!existsSync(join(projectRoot, ".git"))) {
+		return null;
+	}
+
 	const remoteUrl = readGitCommandSync(projectRoot, ["config", "--get", "remote.origin.url"]);
 	if (remoteUrl === null) {
 		return null;

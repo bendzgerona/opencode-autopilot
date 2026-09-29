@@ -1,5 +1,4 @@
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { readLatestSessionLog, readSessionLog } from "../observability/log-reader";
 import { generateSessionSummary } from "../observability/summary-generator";
 
@@ -31,7 +30,7 @@ export const ocSummary = tool({
 	description:
 		"Generate a markdown summary for the latest session or a specific session ID. Use this to review session outcomes, decisions, and errors.",
 	args: {
-		sessionID: z
+		sessionID: tool.schema
 			.string()
 			.regex(/^[a-zA-Z0-9_-]{1,256}$/)
 			.optional()

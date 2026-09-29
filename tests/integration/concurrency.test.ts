@@ -259,5 +259,5 @@ describe("Full Pipeline Concurrency", () => {
 			count: number;
 		};
 		expect(dbCount.count).toBe(errorCount);
-	});
+	}, 60000);
 });

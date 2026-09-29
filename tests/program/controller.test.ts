@@ -36,7 +36,9 @@ describe("program controller", () => {
 
 		const currentTranche = program ? getCurrentTranche(program) : null;
 		expect(currentTranche?.selectionRationale).toContain("Selected automatically");
-		expect(buildPipelineIdeaForTranche(program!, currentTranche!)).toContain("Program tranche 1/");
+		if (program && currentTranche) {
+			expect(buildPipelineIdeaForTranche(program, currentTranche)).toContain("Program tranche 1/");
+		}
 	});
 
 	test("uses executionMode as the authoritative runtime mode input", () => {

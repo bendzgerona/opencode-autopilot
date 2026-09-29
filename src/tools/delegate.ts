@@ -272,7 +272,18 @@ export const ocDelegate = tool({
 		"Route a task to the best category and spawn a background task with the routing decision. Returns routing info and a background task ID.",
 	args: {
 		task: tool.schema.string().min(1).max(4096).describe("Task description to route"),
-		category: CategorySchema.optional().describe("Optional explicit routing category override"),
+		category: tool.schema
+			.enum([
+				"quick",
+				"visual-engineering",
+				"ultrabrain",
+				"artistry",
+				"writing",
+				"unspecified-high",
+				"unspecified-low",
+			])
+			.optional()
+			.describe("Optional explicit routing category override"),
 		spawn: tool.schema
 			.boolean()
 			.optional()

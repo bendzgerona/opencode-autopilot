@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { z } from "zod";
 
@@ -69,6 +71,9 @@ async function defaultRunChecksCommand(
 	prNumber: number,
 	projectRoot: string,
 ): Promise<{ readonly stdout: string; readonly stderr?: string }> {
+	if (!existsSync(join(projectRoot, ".git"))) {
+		throw new Error("Not a git repository");
+	}
 	const result = await execFileAsync(
 		"gh",
 		[
@@ -79,7 +84,7 @@ async function defaultRunChecksCommand(
 			"--json",
 			"name,state,link,workflow,description,event,bucket",
 		],
-		{ cwd: projectRoot },
+		{ cwd: projectRoot, timeout: 5000 },
 	);
 
 	return Object.freeze({ stdout: result.stdout, stderr: result.stderr });

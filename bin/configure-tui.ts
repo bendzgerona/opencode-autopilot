@@ -131,7 +131,7 @@ async function selectFallbacksViaCheckbox(
 		description: m.model,
 	}));
 
-	const selected = await checkbox({
+	const selected = await checkbox<string>({
 		message: `Select fallback models for ${groupLabel}:`,
 		choices,
 		pageSize: 15,

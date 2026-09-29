@@ -15,7 +15,6 @@
  */
 
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { readLatestSessionLog, readSessionLog } from "../observability/log-reader";
 import { computeDuration, formatDuration } from "../observability/summary-generator";
 import type { SessionLog } from "../observability/types";
@@ -174,7 +173,7 @@ export const ocSessionStats = tool({
 		"View session statistics including event counts, decisions, errors, and per-phase breakdown. " +
 		"Shows duration, error summary, and phase-by-phase activity.",
 	args: {
-		sessionID: z
+		sessionID: tool.schema
 			.string()
 			.regex(/^[a-zA-Z0-9_-]{1,256}$/)
 			.optional()

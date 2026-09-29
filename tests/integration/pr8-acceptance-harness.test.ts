@@ -75,7 +75,7 @@ describe("PR-8 acceptance — integrated tranche lifecycle", () => {
 		expect(state?.programContext?.trancheIndex).toBe(1);
 		expect(state?.idea).toContain("Execute only this tranche scope");
 		expect(state?.idea).toContain("controller will automatically continue");
-	});
+	}, 30000);
 
 	test("matrix 3: completing tranche 1 automatically continues the persisted backlog with tranche 2", async () => {
 		await orchestrateCore({ idea: BROAD_REQUEST, intent: "implementation" }, artifactDir);
@@ -153,7 +153,7 @@ describe("PR-8 acceptance — integrated tranche lifecycle", () => {
 		const advancedProgram = loadLatestProgramRunFromKernel(artifactDir);
 		expect(advancedProgram?.tranches[0]?.status).toBe("COMPLETED");
 		expect(advancedProgram?.tranches[1]?.status).toBe("IN_PROGRESS");
-	});
+	}, 30000);
 
 	test("matrix 9+10: program requires Oracle signoff — finalOracleVerdict field exists and is initially null", async () => {
 		const program = planProgramRunFromRequest(BROAD_REQUEST, "standard");

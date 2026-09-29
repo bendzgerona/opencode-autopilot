@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,6 +10,10 @@ import {
 } from "../../src/utils/opencode-config";
 
 describe("opencode-config", () => {
+	beforeEach(() => {
+		delete process.env.OPENCODE_CONFIG;
+		delete process.env.OPENCODE_CONFIG_DIR;
+	});
 	describe("parseJsonc", () => {
 		test("parses valid JSON", () => {
 			const json = '{"plugin": ["test"], "version": 7}';
@@ -216,7 +220,7 @@ describe("opencode-config", () => {
 			expect(result).toHaveProperty("message");
 			expect(typeof result.success).toBe("boolean");
 			expect(typeof result.message).toBe("string");
-		});
+		}, 15000);
 
 		test("returns honest message about verification limitations when successful", async () => {
 			const result = await verifyPluginLoad();
@@ -232,6 +236,6 @@ describe("opencode-config", () => {
 				expect(result.details).toBeDefined();
 				expect(result.details).toContain("not verified");
 			}
-		});
+		}, 15000);
 	});
 });

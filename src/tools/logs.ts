@@ -13,7 +13,6 @@
  */
 
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { openProjectKernelDb } from "../kernel/database";
 import {
 	listSessionLogs,
@@ -273,32 +272,37 @@ export const ocLogs = tool({
 		"View session logs. Modes: 'list' shows all sessions, 'detail' shows full log with " +
 		"summary, 'search' filters events by type/time/domain/subsystem/severity. Accepts sessionID or runId to resolve correlated logs.",
 	args: {
-		mode: z.enum(["list", "detail", "search"]).describe("View mode: list, detail, or search"),
-		sessionID: z
+		mode: tool.schema
+			.enum(["list", "detail", "search"])
+			.describe("View mode: list, detail, or search"),
+		sessionID: tool.schema
 			.string()
 			.regex(/^[a-zA-Z0-9_-]{1,256}$/)
 			.optional()
 			.describe("Session ID to view (uses latest if omitted)"),
-		runId: z
+		runId: tool.schema
 			.string()
 			.regex(/^[a-zA-Z0-9_-]{1,256}$/)
 			.optional()
 			.describe("Run ID to resolve through pending dispatch session correlation"),
-		eventType: z.string().optional().describe("Filter events by type (for search mode)"),
-		after: z.string().optional().describe("Only events after this ISO timestamp (for search mode)"),
-		before: z
+		eventType: tool.schema.string().optional().describe("Filter events by type (for search mode)"),
+		after: tool.schema
+			.string()
+			.optional()
+			.describe("Only events after this ISO timestamp (for search mode)"),
+		before: tool.schema
 			.string()
 			.optional()
 			.describe("Only events before this ISO timestamp (for search mode)"),
-		domain: z
+		domain: tool.schema
 			.string()
 			.optional()
 			.describe("Filter events by domain (e.g. 'session', 'orchestrator') (for search mode)"),
-		subsystem: z
+		subsystem: tool.schema
 			.string()
 			.optional()
 			.describe("Filter events by payload.subsystem field (for search mode)"),
-		severity: z
+		severity: tool.schema
 			.string()
 			.optional()
 			.describe(

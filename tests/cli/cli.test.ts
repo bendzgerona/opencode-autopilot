@@ -13,6 +13,8 @@ import { initMemoryDb } from "../../src/memory/database";
 import { insertObservation, upsertPreference } from "../../src/memory/repository";
 import { resolveProjectIdentitySync } from "../../src/projects/resolve";
 
+process.env.OPENCODE_VERSION = "1.18.30";
+
 describe("CLI install", () => {
 	let tempDir: string;
 	let configPath: string;

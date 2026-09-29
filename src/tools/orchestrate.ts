@@ -63,7 +63,7 @@ import {
 	type Tranche,
 } from "../program";
 import { resolveProjectIdentitySync } from "../projects/resolve";
-import { getIntentRouting, type IntentType, IntentTypeSchema } from "../routing/intent-types";
+import { getIntentRouting, type IntentType } from "../routing/intent-types";
 import { createRouteTicketRepository } from "../routing/route-ticket-repository";
 import { isEnoentError } from "../utils/fs-helpers";
 import { ensureGitignore } from "../utils/gitignore";
@@ -2057,16 +2057,18 @@ async function processHandlerResult(
 				const idx = PHASE_INDEX[currentState.currentPhase] ?? TOTAL_PHASES;
 				if (currentState.programContext !== null) {
 					publishTrancheCompleted(visibilityBus, currentState);
-					const updatedProgram =
-						programCompletionResolution?.kind === "continue"
-							? (saveProgramRunToKernel(artifactDir, programCompletionResolution.program),
-								programCompletionResolution.program)
-							: programCompletionResolution?.kind === "complete"
-								? (saveProgramRunToKernel(artifactDir, programCompletionResolution.program),
-									programCompletionResolution.program)
-								: updateProgramRunForState(artifactDir, currentState, (program) =>
-										advanceProgramToNextTranche(program),
-									);
+					let updatedProgram: ProgramRun | null = null;
+					if (
+						programCompletionResolution?.kind === "continue" ||
+						programCompletionResolution?.kind === "complete"
+					) {
+						saveProgramRunToKernel(artifactDir, programCompletionResolution.program);
+						updatedProgram = programCompletionResolution.program;
+					} else {
+						updatedProgram = updateProgramRunForState(artifactDir, currentState, (program) =>
+							advanceProgramToNextTranche(program),
+						);
+					}
 					const nextTranche =
 						programCompletionResolution?.kind === "continue"
 							? programCompletionResolution.nextTranche
@@ -2714,9 +2716,22 @@ export const ocOrchestrate = tool({
 			.max(1_048_576)
 			.optional()
 			.describe("Result from previous agent to advance the pipeline"),
-		intent: IntentTypeSchema.optional().describe(
-			"Intent classification from oc_route. Required for new pipeline starts — must be 'implementation'. Non-implementation intents are rejected with routing guidance. Optional when resuming an existing pipeline with a result.",
-		),
+		intent: tool.schema
+			.enum([
+				"research",
+				"implementation",
+				"investigation",
+				"evaluation",
+				"fix",
+				"review",
+				"planning",
+				"quick",
+				"open_ended",
+			])
+			.optional()
+			.describe(
+				"Intent classification from oc_route. Required for new pipeline starts — must be 'implementation'. Non-implementation intents are rejected with routing guidance. Optional when resuming an existing pipeline with a result.",
+			),
 		abandon: tool.schema
 			.boolean()
 			.optional()

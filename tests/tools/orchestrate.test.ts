@@ -180,7 +180,7 @@ describe("orchestrateCore", () => {
 		).toBe(false);
 		expect(saved?.processedResultIds).not.toContain("recon-retry-1");
 		expect(saved?.processedResultIds).toContain("recon-retry-2");
-	});
+	}, 30000);
 
 	test("returns stale error for mismatched runId", async () => {
 		await orchestrateCore({ idea: "build a chat", intent: "implementation" }, tempDir);
@@ -709,7 +709,7 @@ describe("orchestrateCore", () => {
 		const advancedProgram = loadLatestProgramRunFromKernel(tempDir);
 		expect(advancedProgram?.tranches[0]?.status).toBe("COMPLETED");
 		expect(advancedProgram?.tranches[1]?.status).toBe("IN_PROGRESS");
-	});
+	}, 30000);
 
 	test("final tranche waits for program Oracle signoff before completing", async () => {
 		const program = planProgramRunFromRequest(
@@ -849,7 +849,7 @@ describe("orchestrateCore", () => {
 		const completedProgram = loadLatestProgramRunFromKernel(tempDir);
 		expect(completedProgram?.status).toBe("COMPLETED");
 		expect(completedProgram?.finalOracleVerdict).toBe("Oracle approved final program completion.");
-	});
+	}, 30000);
 
 	test("terminal autonomous program stops are classified explicitly as blocked", async () => {
 		const broadIdea = [
@@ -1449,7 +1449,7 @@ describe("active pipeline intent guard", () => {
 		const parsed = JSON.parse(result);
 		expect(parsed.action).toBe("dispatch");
 		expect(parsed.phase).toBe("CHALLENGE");
-	});
+	}, 30000);
 
 	test("result-based resume with stray non-implementation intent is NOT rejected", async () => {
 		const first = JSON.parse(

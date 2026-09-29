@@ -1,5 +1,4 @@
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { createMockError } from "../observability/mock/mock-provider";
 import type { MockFailureMode } from "../observability/mock/types";
 import { FAILURE_MODES } from "../observability/mock/types";
@@ -92,7 +91,7 @@ export const ocMockFallback = tool({
 		"Generate mock errors for fallback chain testing. " +
 		"Use 'list' to see available failure modes.",
 	args: {
-		mode: z.string().describe("Failure mode to simulate or 'list' for available modes"),
+		mode: tool.schema.string().describe("Failure mode to simulate or 'list' for available modes"),
 	},
 	async execute({ mode }) {
 		return mockFallbackCore(mode);

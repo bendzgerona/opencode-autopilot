@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { execSync } from "node:child_process";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,8 +19,8 @@ describe("CLI preflight", () => {
 		originalCwd = process.cwd();
 
 		await mkdir(projectRoot, { recursive: true });
+		await mkdir(join(projectRoot, ".git"), { recursive: true });
 		await writeFile(join(projectRoot, "package.json"), JSON.stringify({ name: "repo" }), "utf-8");
-		execSync("git init", { cwd: projectRoot, stdio: "pipe" });
 		process.chdir(projectRoot);
 	});
 

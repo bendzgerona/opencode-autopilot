@@ -154,16 +154,17 @@ describe("handleRetrospective", () => {
 	});
 
 	test("merges new lessons with existing lesson memory", async () => {
+		const recentDate = new Date().toISOString();
 		const existingLesson: Lesson = {
 			content: "Existing lesson",
 			domain: "review" as LessonDomain,
-			extractedAt: "2026-03-30T00:00:00.000Z",
+			extractedAt: recentDate,
 			sourcePhase: "BUILD",
 		};
 		mockLoadLessonMemory.mockResolvedValue({
 			schemaVersion: 1 as const,
 			lessons: [existingLesson],
-			lastUpdatedAt: "2026-03-30T00:00:00.000Z",
+			lastUpdatedAt: recentDate,
 		});
 
 		const state = makeState();

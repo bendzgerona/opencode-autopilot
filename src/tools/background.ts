@@ -221,14 +221,30 @@ export const ocBackground = tool({
 	description:
 		"Manage background tasks. Actions: spawn, status, list, cancel, result. Returns JSON with displayText for presentation.",
 	args: {
-		action: backgroundActionSchema.describe("Background task action"),
-		sessionId: z.string().min(1).optional().describe("Session ID to scope tasks to"),
-		taskId: z.string().min(1).optional().describe("Background task ID"),
-		description: z.string().min(1).optional().describe("Background task description for spawn"),
-		category: z.string().min(1).optional().describe("Optional task category for spawn/list"),
-		agent: z.string().min(1).optional().describe("Optional agent hint for spawn"),
-		priority: z.number().int().min(0).max(100).optional().describe("Optional task priority"),
-		status: z
+		action: tool.schema
+			.enum(["spawn", "status", "list", "cancel", "result"])
+			.describe("Background task action"),
+		sessionId: tool.schema.string().min(1).optional().describe("Session ID to scope tasks to"),
+		taskId: tool.schema.string().min(1).optional().describe("Background task ID"),
+		description: tool.schema
+			.string()
+			.min(1)
+			.optional()
+			.describe("Background task description for spawn"),
+		category: tool.schema
+			.string()
+			.min(1)
+			.optional()
+			.describe("Optional task category for spawn/list"),
+		agent: tool.schema.string().min(1).optional().describe("Optional agent hint for spawn"),
+		priority: tool.schema
+			.number()
+			.int()
+			.min(0)
+			.max(100)
+			.optional()
+			.describe("Optional task priority"),
+		status: tool.schema
 			.enum(["pending", "running", "completed", "failed", "cancelled"])
 			.optional()
 			.describe("Optional status filter for list"),

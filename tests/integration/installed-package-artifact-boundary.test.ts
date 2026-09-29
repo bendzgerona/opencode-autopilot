@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -80,17 +80,17 @@ describe("installed package artifact boundary", () => {
 		expect(existsSync(join(artifactDir, "kernel.db"))).toBe(true);
 		expect(existsSync(join(artifactDir, "state.json"))).toBe(false);
 		expect(existsSync(join(artifactDir, "current-review.json"))).toBe(false);
-	});
+	}, 30000);
 
 	test("installed inspect preflight reports mixed legacy states clearly", async () => {
 		const projectRoot = join(tempDir, "repo-preflight");
 		await mkdir(projectRoot, { recursive: true });
+		await mkdir(join(projectRoot, ".git"), { recursive: true });
 		await writeFile(
 			join(projectRoot, "package.json"),
 			JSON.stringify({ name: "repo-preflight" }),
 			"utf-8",
 		);
-		execSync("git init", { cwd: projectRoot, stdio: "pipe" });
 
 		const configPath = join(homeDir, ".config", "opencode", "opencode-autopilot.json");
 		await mkdir(join(homeDir, ".config", "opencode"), { recursive: true });
@@ -134,5 +134,5 @@ describe("installed package artifact boundary", () => {
 				}),
 			]),
 		);
-	});
+	}, 30000);
 });

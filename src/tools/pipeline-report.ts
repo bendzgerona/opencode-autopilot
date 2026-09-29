@@ -13,7 +13,6 @@
  */
 
 import { tool } from "@opencode-ai/plugin";
-import { z } from "zod";
 import { readLatestSessionLog, readSessionLog } from "../observability/log-reader";
 import { computeDuration, formatDuration } from "../observability/summary-generator";
 import type { SessionLog } from "../observability/types";
@@ -137,7 +136,7 @@ export const ocPipelineReport = tool({
 		"View pipeline decision trace. Shows phase-by-phase breakdown of all autonomous decisions " +
 		"with agent and rationale. Read-only report for post-session analysis.",
 	args: {
-		sessionID: z
+		sessionID: tool.schema
 			.string()
 			.regex(/^[a-zA-Z0-9_-]{1,256}$/)
 			.optional()

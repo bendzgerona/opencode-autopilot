@@ -1,8 +1,12 @@
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 
-import { getLogger, initLoggers, MultiplexSink } from "../../src/logging/domains";
+import { getLogger, initLoggers, MultiplexSink, resetLoggerState } from "../../src/logging/domains";
 
 describe("Domain loggers", () => {
+	beforeEach(() => {
+		resetLoggerState();
+	});
+
 	it("should tag loggers with domain metadata", () => {
 		const entries: unknown[] = [];
 		initLoggers("/test/project", [

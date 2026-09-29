@@ -61,12 +61,20 @@ function makeBuildState(
 
 describe("parallel BUILD integration", () => {
 	let tempDir: string;
+	let originalConfigDir: string | undefined;
 
 	beforeEach(async () => {
 		tempDir = await mkdtemp(join(tmpdir(), "parallel-build-"));
+		originalConfigDir = process.env.OPENCODE_CONFIG_DIR;
+		process.env.OPENCODE_CONFIG_DIR = tempDir;
 	});
 
 	afterEach(async () => {
+		if (originalConfigDir !== undefined) {
+			process.env.OPENCODE_CONFIG_DIR = originalConfigDir;
+		} else {
+			delete process.env.OPENCODE_CONFIG_DIR;
+		}
 		await rm(tempDir, { recursive: true, force: true });
 	});
 

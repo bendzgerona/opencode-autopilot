@@ -148,12 +148,37 @@ export const ocRoute = tool({
 	description:
 		"Validate intent classification and return routing instructions. The LLM classifies the user's intent, then calls this tool to validate the classification and get operational routing — which agent to use, whether to start the pipeline, and what behavior to follow. Call BEFORE oc_orchestrate on every new user message.",
 	args: {
-		primaryIntent: IntentTypeSchema.describe(
-			"Primary intent type: research, implementation, investigation, evaluation, fix, review, planning, quick, or open_ended",
-		),
-		secondaryIntent: IntentTypeSchema.optional().describe(
-			"Optional secondary intent for combined requests like 'research then implement'. Omit if single-intent.",
-		),
+		primaryIntent: tool.schema
+			.enum([
+				"research",
+				"implementation",
+				"investigation",
+				"evaluation",
+				"fix",
+				"review",
+				"planning",
+				"quick",
+				"open_ended",
+			])
+			.describe(
+				"Primary intent type: research, implementation, investigation, evaluation, fix, review, planning, quick, or open_ended",
+			),
+		secondaryIntent: tool.schema
+			.enum([
+				"research",
+				"implementation",
+				"investigation",
+				"evaluation",
+				"fix",
+				"review",
+				"planning",
+				"quick",
+				"open_ended",
+			])
+			.optional()
+			.describe(
+				"Optional secondary intent for combined requests like 'research then implement'. Omit if single-intent.",
+			),
 		reasoning: tool.schema
 			.string()
 			.min(1)

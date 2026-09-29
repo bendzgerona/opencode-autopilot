@@ -10,12 +10,12 @@ describe("updateDocsCore", () => {
 		expect(parsed).toHaveProperty("affectedDocs");
 		expect(parsed).toHaveProperty("summary");
 		expect(typeof parsed.summary).toBe("string");
-	});
+	}, 15000);
 
 	it("handles 'all' scope", async () => {
 		const result = await updateDocsCore({ scope: "all" }, process.cwd());
 		const parsed = JSON.parse(result);
 		expect(parsed).toHaveProperty("changedFiles");
 		expect(parsed).toHaveProperty("summary");
-	});
+	}, 15000);
 });

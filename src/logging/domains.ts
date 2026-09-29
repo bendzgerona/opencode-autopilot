@@ -36,6 +36,11 @@ class PreInitBuffer {
 		}
 		this.buffer = [];
 	}
+
+	clear(): void {
+		this.buffer = [];
+		this.flushed = false;
+	}
 }
 
 const preInitBuffer = new PreInitBuffer();
@@ -100,5 +105,6 @@ export function isLoggerInitialized(): boolean {
 export function resetLoggerState(): void {
 	_rootLogger = null;
 	isInitialized = false;
+	preInitBuffer.clear();
 	activeSink = preInitSink;
 }

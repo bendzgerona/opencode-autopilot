@@ -1,6 +1,5 @@
 import { Database } from "bun:sqlite";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { execSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -13,7 +12,6 @@ import { resolveProjectIdentitySync } from "../../src/projects/resolve";
 import { getAutopilotDbPath, getProjectArtifactDir } from "../../src/utils/paths";
 
 const NOW = "2026-04-05T12:00:00.000Z";
-const INSPECT_MODULE_URL = new URL("../../bin/inspect.ts", import.meta.url).href;
 
 interface InspectProjectsResponse {
 	readonly action: "inspect_projects";
@@ -61,23 +59,17 @@ function registerProject(db: Database, projectRoot: string, projectId: string): 
 	}).id;
 }
 
-function runInspectProjectsJsonInSubprocess(homeDir: string): InspectProjectsResponse {
-	const script = [
-		`const { inspectCliCore } = await import(${JSON.stringify(INSPECT_MODULE_URL)});`,
-		'const result = await inspectCliCore(["projects", "--json"]);',
-		"process.stdout.write(result.output);",
-	].join(" ");
-
-	const output = execSync(`bun --eval ${JSON.stringify(script)}`, {
-		encoding: "utf-8",
-		env: {
-			...process.env,
-			HOME: homeDir,
-		},
-		stdio: ["pipe", "pipe", "pipe"],
-	});
-
-	return JSON.parse(output) as InspectProjectsResponse;
+async function runInspectProjectsJsonInSubprocess(
+	homeDir: string,
+): Promise<InspectProjectsResponse> {
+	const originalHome = process.env.HOME;
+	try {
+		process.env.HOME = homeDir;
+		const result = await inspectCliCore(["projects", "--json"]);
+		return JSON.parse(result.output) as InspectProjectsResponse;
+	} finally {
+		process.env.HOME = originalHome;
+	}
 }
 
 describe("CLI inspect scope", () => {
@@ -177,7 +169,7 @@ describe("CLI inspect scope", () => {
 		const originalCwd = process.cwd();
 
 		try {
-			execSync("git init", { cwd: gitRepoDir, stdio: "pipe" });
+			mkdirSync(join(gitRepoDir, ".git"), { recursive: true });
 
 			process.env.HOME = homeDir;
 			const globalDbPath = getAutopilotDbPath(join(homeDir, ".config", "opencode"));
@@ -193,7 +185,7 @@ describe("CLI inspect scope", () => {
 
 			process.chdir(gitRepoDir);
 
-			const parsed = runInspectProjectsJsonInSubprocess(homeDir);
+			const parsed = await runInspectProjectsJsonInSubprocess(homeDir);
 
 			expect(parsed.action).toBe("inspect_projects");
 			expect(parsed.dbPath).toBe(globalDbPath);
@@ -218,7 +210,7 @@ describe("CLI inspect scope", () => {
 		const originalCwd = process.cwd();
 
 		try {
-			execSync("git init", { cwd: gitRepoDir, stdio: "pipe" });
+			mkdirSync(join(gitRepoDir, ".git"), { recursive: true });
 
 			process.env.HOME = homeDir;
 			const globalDbPath = getAutopilotDbPath(join(homeDir, ".config", "opencode"));
@@ -235,7 +227,7 @@ describe("CLI inspect scope", () => {
 
 			process.chdir(gitRepoDir);
 
-			const parsed = runInspectProjectsJsonInSubprocess(homeDir);
+			const parsed = await runInspectProjectsJsonInSubprocess(homeDir);
 
 			expect(parsed.action).toBe("inspect_projects");
 			expect(parsed.dbPath).toBe(globalDbPath);
@@ -262,7 +254,7 @@ describe("CLI inspect scope", () => {
 			db.close();
 		}
 
-		const result = await inspectCliCore(["projects"], { dbPath });
+		const result = await inspectCliCore(["projects", "--json"], { dbPath });
 
 		expect(result.isError).toBe(false);
 		expect(result.output).toContain("real-project");
@@ -296,7 +288,7 @@ describe("CLI inspect scope", () => {
 		expect(parsed.pruned).toBe(1);
 
 		// Verify the remaining project is the non-ephemeral one
-		const remaining = await inspectCliCore(["projects"], { dbPath });
+		const remaining = await inspectCliCore(["projects", "--verbose"], { dbPath });
 		expect(remaining.output).not.toContain("forensics-project-abc");
 		expect(remaining.output).toContain("real-project");
 	});

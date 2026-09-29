@@ -1,5 +1,7 @@
 import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { z } from "zod";
 import { REVIEW_AGENTS, SPECIALIZED_AGENTS, STAGE3_AGENTS } from "../review/agents/index";
@@ -250,6 +252,10 @@ export async function getChangedFilesForReview(
 	projectRoot: string,
 	directory?: string,
 ): Promise<readonly string[]> {
+	if (!existsSync(join(projectRoot, ".git"))) {
+		return Object.freeze([]);
+	}
+
 	try {
 		let args: string[];
 		switch (scope) {

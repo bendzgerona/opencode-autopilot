@@ -133,6 +133,10 @@ export interface SidebarSlotPlugin {
 	readonly order?: number;
 	readonly slots: {
 		readonly sidebar_content?: (ctx: SidebarSlotContext, props: SidebarSlotProps) => unknown;
+		readonly [slotName: string]:
+			| ((ctx: SidebarSlotContext, props: SidebarSlotProps) => unknown)
+			| ((ctx: unknown, props: unknown) => unknown)
+			| undefined;
 	};
 }
 
@@ -604,10 +608,11 @@ export function createSidebarTuiPlugin(options?: { readonly order?: number }): S
 	const order = options?.order ?? 50;
 
 	return async (api) => {
-		api.slots.register({
-			order,
-			slots: {
-				sidebar_content(_ctx, _props) {
+		try {
+			if (!api) return;
+
+			const renderContent = (_ctx?: unknown): string | null => {
+				try {
 					const projectRoot = resolveSidebarProjectRoot(api);
 					if (!projectRoot) {
 						return null;
@@ -619,8 +624,38 @@ export function createSidebarTuiPlugin(options?: { readonly order?: number }): S
 					}
 
 					return renderSidebarText(sidebarState);
-				},
-			},
-		});
+				} catch {
+					return null;
+				}
+			};
+
+			// OpenCode v2 TUI slot API
+			if (
+				typeof (api as unknown as { ui?: { slot?: (cfg: unknown) => void } })?.ui?.slot ===
+				"function"
+			) {
+				(api as unknown as { ui: { slot: (cfg: unknown) => void } }).ui.slot({
+					append: "sidebar.content",
+					render: renderContent,
+				});
+			}
+
+			// OpenCode v1 TUI slot API
+			if (typeof api?.slots?.register === "function") {
+				api.slots.register({
+					order,
+					slots: {
+						sidebar_content(_ctx: SidebarSlotContext, _props: SidebarSlotProps) {
+							return renderContent(_ctx);
+						},
+						"sidebar.content"(_ctx: unknown, _props: unknown) {
+							return renderContent(_ctx);
+						},
+					},
+				});
+			}
+		} catch {
+			// Best-effort: fail-safe degradation in headless / pure environments
+		}
 	};
 }

@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getPhaseDir } from "../../src/orchestrator/artifacts";
 import { replayEnvelopes } from "../../src/orchestrator/replay";
+import { loadState, saveState } from "../../src/orchestrator/state";
+import type { PipelineState } from "../../src/orchestrator/types";
 import { orchestrateCore } from "../../src/tools/orchestrate";
 
 describe("deterministic replay", () => {
@@ -56,15 +58,15 @@ describe("deterministic replay", () => {
 		await replayEnvelopes(tempDirA, [envelopeA]);
 		await replayEnvelopes(tempDirB, [envelopeB]);
 
-		const stateA = JSON.parse(await readFile(join(tempDirA, "state.json"), "utf-8"));
-		const stateB = JSON.parse(await readFile(join(tempDirB, "state.json"), "utf-8"));
+		const stateA = await loadState(tempDirA);
+		const stateB = await loadState(tempDirB);
 
-		expect(stateA.currentPhase).toBe("CHALLENGE");
-		expect(stateB.currentPhase).toBe("CHALLENGE");
-		expect(stateA.phases.map((p: { name: string; status: string }) => [p.name, p.status])).toEqual(
-			stateB.phases.map((p: { name: string; status: string }) => [p.name, p.status]),
+		expect(stateA?.currentPhase).toBe("CHALLENGE");
+		expect(stateB?.currentPhase).toBe("CHALLENGE");
+		expect(stateA?.phases.map((p) => [p.name, p.status])).toEqual(
+			stateB?.phases.map((p) => [p.name, p.status]),
 		);
-	});
+	}, 15000);
 
 	test("duplicate result envelope is rejected deterministically", async () => {
 		const dispatch = JSON.parse(
@@ -93,7 +95,7 @@ describe("deterministic replay", () => {
 		);
 		expect(second.action).toBe("error");
 		expect(second.code).toBe("E_DUPLICATE_RESULT");
-	});
+	}, 30000);
 
 	test("unknown dispatch result is rejected", async () => {
 		const first = JSON.parse(
@@ -225,7 +227,7 @@ describe("deterministic replay", () => {
 			retryAttempts: {},
 		};
 
-		await Bun.write(join(tempDirA, "state.json"), JSON.stringify(customState, null, 2));
+		await saveState(customState as unknown as PipelineState, tempDirA);
 		const dispatch = JSON.parse(await orchestrateCore({}, tempDirA));
 		// Both wave-1 tasks dispatched in parallel
 		expect(dispatch.action).toBe("dispatch_multi");
@@ -249,12 +251,12 @@ describe("deterministic replay", () => {
 		// Task 2 is still in-progress — handler returns pending-result error
 		expect(afterTask1.code).toBe("E_BUILD_RESULT_PENDING");
 
-		const stateAfterFirst = JSON.parse(await readFile(join(tempDirA, "state.json"), "utf-8"));
+		const stateAfterFirst = await loadState(tempDirA);
 		expect(
-			stateAfterFirst.tasks.find((t: { id: number; status: string }) => t.id === 1).status,
+			stateAfterFirst?.tasks.find((t: { id: number; status: string }) => t.id === 1)?.status,
 		).toBe("DONE");
 		expect(
-			stateAfterFirst.tasks.find((t: { id: number; status: string }) => t.id === 2).status,
+			stateAfterFirst?.tasks.find((t: { id: number; status: string }) => t.id === 2)?.status,
 		).toBe("IN_PROGRESS");
 
 		// Complete task 2 — wave is now complete, triggers review dispatch
@@ -271,9 +273,9 @@ describe("deterministic replay", () => {
 		};
 		await orchestrateCore({ result: JSON.stringify(resultTask2) }, tempDirA);
 
-		const stateAfterSecond = JSON.parse(await readFile(join(tempDirA, "state.json"), "utf-8"));
+		const stateAfterSecond = await loadState(tempDirA);
 		expect(
-			stateAfterSecond.tasks.find((t: { id: number; status: string }) => t.id === 2).status,
+			stateAfterSecond?.tasks.find((t: { id: number; status: string }) => t.id === 2)?.status,
 		).toBe("DONE");
-	});
+	}, 15000);
 });

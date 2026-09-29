@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -56,6 +58,14 @@ export async function collectDiffEvidence(
 ): Promise<DiffEvidence> {
 	let diff = "";
 	let changedFiles: string[] = [];
+
+	if (!existsSync(join(projectRoot, ".git"))) {
+		return Object.freeze({
+			diff: "",
+			changedFiles: Object.freeze([]),
+			truncated: false,
+		});
+	}
 
 	try {
 		const { stdout } = await execFileAsync("git", getDiffArgs(scope, directory), {

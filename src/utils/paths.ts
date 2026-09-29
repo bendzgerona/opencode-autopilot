@@ -68,7 +68,10 @@ export interface ProjectRuntimeCleanupResult {
 }
 
 export function getGlobalConfigDir(): string {
-	return join(homedir(), ".config", "opencode");
+	if (process.env.OPENCODE_CONFIG_DIR) {
+		return process.env.OPENCODE_CONFIG_DIR;
+	}
+	return join(process.env.HOME ?? homedir(), ".config", "opencode");
 }
 
 export function getAutopilotDbPath(baseDir?: string): string {

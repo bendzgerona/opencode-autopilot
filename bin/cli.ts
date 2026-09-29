@@ -47,6 +47,9 @@ const PLUGIN_NAME = "@kodrunhq/opencode-autopilot";
 // ── Helpers ─────────────────────────────────────────────────────────
 
 async function checkOpenCodeInstalled(): Promise<{ version: string | null; error?: string }> {
+	if (process.env.OPENCODE_VERSION) {
+		return { version: process.env.OPENCODE_VERSION };
+	}
 	try {
 		const { stdout } = await execFile("opencode", ["--version"]);
 		return { version: stdout.trim() };
